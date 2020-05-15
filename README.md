@@ -21,7 +21,7 @@ From a browser then access:
 
 This will demonstrate it in the context of an iframe in the dashboard.
 
-If access it as:
+If you access it as:
 
 * http://localhost:10080/myterminal
 
