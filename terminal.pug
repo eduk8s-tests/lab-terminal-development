@@ -1,0 +1,57 @@
+doctype html
+html
+  head
+doctype html
+html
+  head
+    link(rel="stylesheet" href="/xterm.css")
+    script(src="/xterm.js")
+    script(src="/xterm-addon-fit.js")
+
+    style.
+      html, body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+
+  body
+    div#terminal
+    script.
+      var terminal = new Terminal();
+      var fitAddon = new FitAddon.FitAddon();
+
+      var session = !{session};
+
+      terminal.loadAddon(fitAddon);
+      terminal.open(document.getElementById('terminal'));
+      fitAddon.fit();
+
+      var ws = new WebSocket("ws://localhost:3001");
+
+      ws.onopen = function() {
+        // Web Socket is connected, send data using send()
+        // ws.send("Message to send");
+        ws.send(JSON.stringify({
+            id: session
+        }));
+        console.log("Connected...");
+      };
+
+      ws.onmessage = function (evt) {
+        var message = JSON.parse(evt.data);
+        if (message.id === session) {
+            terminal.write(message.data);
+        } else {
+            console.warning("Client session " + session + " received message for session " + message.id);
+        }
+        console.log("Message is received...");
+      };
+
+      terminal.onData(function(data) {
+        ws.send(JSON.stringify({
+            id: session,
+            data: data
+        }));
+      });
+
