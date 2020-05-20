@@ -1,6 +1,11 @@
 LAB - Terminal Hacks
 ====================
 
+### Running Terminal Locally
+1. `npm install`
+2. `npm start`
+3. Navigate to https://localhost:3001/session/1 or (https://localhost:3001/session/<n> where is the session id)
+
 This repository is a hacking area for developing a new embedded terminal.
 
 To build it do:
