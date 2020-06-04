@@ -9,9 +9,9 @@ RUN fix-permissions /home/eduk8s
 # To allow development of a new terminal, going to fudge some things.
 # First move the handler for the new endpoint into the routes directory.
 
-RUN mv myterminal.js /opt/gateway/routes/
-
-RUN mv myterminal.pug /opt/gateway/views/
+RUN mkdir /opt/xtermjs && mv tsconfig.json /opt/xtermjs/ && mv terminal.ts /opt/xtermjs/ && mv terminal.pug /opt/xtermjs/
+COPY --chown=1001:0 terminal/start-xtermjs /opt/eduk8s/sbin
+COPY --chown=1001:0 terminal/xtermjs.conf /opt/eduk8s/etc/supervisor/
 
 # Next move the workshop.yaml file to the config directory so a new
 # tab will be created in the dashboard for the new terminal.
@@ -22,6 +22,6 @@ RUN mkdir -p /opt/eduk8s/config && \
 
 # Finally install any extra npm packages we need for the new terminal.
 
-RUN mv package.json /opt/gateway/ && \
-    cd /opt/gateway && \
+RUN mv package.json /opt/xtermjs/ && \
+    cd /opt/xtermjs && \
     npm install

@@ -4,8 +4,9 @@
   "description": "",
   "main": "terminal.js",
   "scripts": {
-    "start": "npm run compile && node ./terminal.js",
-    "compile": "rimraf terminal.js* && tsc"
+    "start": "node ./terminal.js",
+    "compile": "rimraf terminal.js* && tsc",
+    "install": "npm run compile"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.13.0",
@@ -13,6 +14,7 @@
     "axios": "0.19.2",
     "axios-retry": "3.1.8",
     "cors": "^2.8.5",
+    "css-element-queries": "^1.2.3",
     "express": "4.17.1",
     "express-basic-auth": "1.2.0",
     "express-session": "1.17.1",

@@ -6,9 +6,15 @@ spec:
   title: Terminal Hacks
   description: Workshop image to develop new terminal
   content:
-    image: quay.io/eduk8s-tests/lab-terminal-hacks:master
+    image: boykoalex/terminal-hacks:latest
   session:
     budget: small
+    applications:
+      terminal:
+        enabled: true
+    ingresses:
+    - name: xtermjs
+      port: 10191
     dashboards:
-    - name: "MyTerminal"
-      url: /myterminal
+    - name: xtermjs
+      url: "$(ingress_protocol)://$(session_namespace)-xtermjs.$(ingress_domain)/session/1"

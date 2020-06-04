@@ -12,3 +12,4 @@
 .yarn
 *.swp
 terminal.js*
+node_modules

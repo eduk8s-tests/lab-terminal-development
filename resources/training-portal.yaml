@@ -4,7 +4,7 @@ metadata:
   name: lab-terminal-hacks
 spec:
   portal:
-    capacity: 1
+    capacity: 5
     expires: 60m
     orphaned: 5m
   workshops:

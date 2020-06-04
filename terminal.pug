@@ -7,6 +7,8 @@ html
     link(rel="stylesheet" href="/xterm.css")
     script(src="/xterm.js")
     script(src="/xterm-addon-fit.js")
+    script(src="/ResizeSensor.js")
+    script(src="/lodash.js")
 
     style.
       html, body {
@@ -14,44 +16,110 @@ html
         margin: 0;
         overflow: hidden;
       }
-
+      #terminal {
+        height: 100%;
+        width: 100%;
+      }
   body
     div#terminal
     script.
-      var terminal = new Terminal();
-      var fitAddon = new FitAddon.FitAddon();
 
       var session = !{session};
+      var wsUrl = "#{wsUrl}";
+      var env = !{env};
+
+      var terminal = new Terminal({
+        cursorBlink: true
+      });
+      var fitAddon = new FitAddon.FitAddon();
+
+      var terminalParent = document.getElementById('terminal')
 
       terminal.loadAddon(fitAddon);
-      terminal.open(document.getElementById('terminal'));
-      fitAddon.fit();
 
-      var ws = new WebSocket("ws://localhost:3001");
+      document.addEventListener('DOMContentLoaded', function() {
 
-      ws.onopen = function() {
-        // Web Socket is connected, send data using send()
-        // ws.send("Message to send");
-        ws.send(JSON.stringify({
-            id: session
-        }));
-        console.log("Connected...");
-      };
+          var init = function() {
 
-      ws.onmessage = function (evt) {
-        var message = JSON.parse(evt.data);
-        if (message.id === session) {
-            terminal.write(message.data);
-        } else {
-            console.warning("Client session " + session + " received message for session " + message.id);
-        }
-        console.log("Message is received...");
-      };
+              terminal.open(terminalParent);
 
-      terminal.onData(function(data) {
-        ws.send(JSON.stringify({
-            id: session,
-            data: data
-        }));
+              var ws = new WebSocket(wsUrl);
+
+              var ping = function() {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({}));
+                    setTimeout(ping, 50000);
+                }
+              };
+
+              var resizeTerminal = function() {
+                if (terminalParent.clientWidth > 0 && terminalParent.clientHeight > 0) {
+                  fitAddon.fit();
+                  ws.send(JSON.stringify({
+                    id: session,
+                    size: {
+                      cols: terminal.cols,
+                      rows: terminal.rows
+                    }
+                  }));
+                }
+              };
+
+              ws.onopen = function() {
+                // Web Socket is connected, send data using send()
+                // ws.send("Message to send");
+                ws.send(JSON.stringify({
+                    id: session
+                }));
+
+                // Setup periodic ping messages
+                ping();
+
+                // Send initial size of the terminal for the pty process to adjust
+                // Unless the size of the parent element is 0
+                resizeTerminal();
+              };
+
+              ws.onmessage = function (evt) {
+                var message = JSON.parse(evt.data);
+                if (message.id === session) {
+                    terminal.write(message.data);
+                } else {
+                    console.warning("Client session " + session + " received message for session " + message.id);
+                }
+              };
+
+              ws.onclose = function(evt) {
+                terminal.write("Closed");
+              }
+
+              terminal.onData(function(data) {
+                ws.send(JSON.stringify({
+                    id: session,
+                    data: data
+                }));
+              });
+
+              new ResizeSensor(terminalParent, _.throttle(function() {
+                if (ws.readyState === WebSocket.OPEN) {
+                 resizeTerminal();
+                }
+              }, 500));
+
+          }
+
+          waitForVisibility = function() {
+            if (terminalParent.offsetParent) {
+              init();
+            } else {
+              setTimeout(waitForVisibility, 300);
+            }
+          };
+
+          waitForVisibility();
+
       });
+
+
+
 
