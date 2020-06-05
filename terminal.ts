@@ -8,9 +8,11 @@ import {IPty} from "node-pty";
 const MAX_PAGE = 3;
 const ARG_PORT_PREFIX = '--port=';
 const ARG_CWD_PREFIX = '--cwd=';
+const ARG_PTY_PREFX = '--pty-params=';
 
 let cliPort = '';
 let cwd = '';
+let ptyParams: string[] = [];
 
 for (let i = 0; i < process.argv.length; i++) {
     const value = process.argv[i];
@@ -18,6 +20,14 @@ for (let i = 0; i < process.argv.length; i++) {
         cliPort = value.substr(ARG_PORT_PREFIX.length);
     } else if (value.startsWith(ARG_CWD_PREFIX)) {
         cwd = value.substr(ARG_CWD_PREFIX.length);
+    } else if (value.startsWith(ARG_PTY_PREFX)) {
+        let paramsStr = value.substr(ARG_PTY_PREFX.length).trim();
+        if (paramsStr[0] === '"' && paramsStr[paramsStr.length - 1] === '"') {
+            paramsStr = paramsStr.substring(1, paramsStr.length - 1);
+        }
+        if (paramsStr.length) {
+            ptyParams.push(...paramsStr.split(/\s+/));
+        }
     }
 }
 
@@ -63,7 +73,7 @@ class PtyProcessManager {
     getOrCreate(id: string): PtyProcessInfo {
         let processInfo = this.processes.get(id);
         if (!processInfo) {
-            const ptyProcess = pty.spawn('bash', [], {
+            const ptyProcess = pty.spawn('bash', ptyParams, {
                 name: 'xterm-color',
                 cols: 120,
                 rows: 30,

@@ -3,6 +3,10 @@ set -x
 
 set -eo pipefail
 
+export SHELL=/bin/bash
+
+export PS1="[\w] $ "
+
 # Always recalculate the workshop directory in case running this due
 # to it being restarted within the context of the container.
 
@@ -13,5 +17,6 @@ ARGS=""
 
 ARGS="$ARGS --cwd=$TERMINAL_TARGET_DIR"
 ARGS="$ARGS --port=$TERMINAL_PORT"
+ARGS="$ARGS --pty-params=\"--login\""
 
 exec node ./terminal.js $ARGS
