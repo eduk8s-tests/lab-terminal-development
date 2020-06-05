@@ -122,11 +122,15 @@ wss.on('connection', (ws: WebSocket) => {
         if (msg.id) {
             const processInfo = processManager.getOrCreate(msg.id);
             if (msg.data) {
+                // Terminal input data message
                 processInfo.pty.write(msg.data);
             } else if (msg.size) {
+                // Terminal size (cols, rows) message
                 console.log(`Sizing pty process output to columns=${msg.size.cols} rows=${msg.size.rows}`);
                 processInfo.pty.resize(msg.size.cols, msg.size.rows);
             } else {
+                // Initial message for the session. Has the the session id only.
+                // Reply is send current pty content if any
                 processInfo.sockets.push(ws);
                 ws.send(JSON.stringify({
                     id: processInfo.id,
@@ -134,6 +138,8 @@ wss.on('connection', (ws: WebSocket) => {
                 }));
             }
         }
+        // Else it is a ping message with is just empty object {}
+        // Sent periodically from the client to keep the WS opened
     });
 
 
